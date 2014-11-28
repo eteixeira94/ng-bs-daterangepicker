@@ -7,21 +7,24 @@
 'use strict';
 
 angular.module('ngBootstrap', []).directive('input', function ($compile, $parse) {
+
 	return {
 		restrict: 'E',
 		require: '?ngModel',
 		link: function ($scope, $element, $attributes, ngModel) {
+
 			if ($attributes.type !== 'daterange' || ngModel === null ) return;
 
-			var options = {};
-			options.format = $attributes.format || 'YYYY-MM-DD';
-			options.separator = $attributes.separator || ' - ';
-			options.minDate = $attributes.minDate && moment($attributes.minDate);
-			options.maxDate = $attributes.maxDate && moment($attributes.maxDate);
-			options.dateLimit = $attributes.limit && moment.duration.apply(this, $attributes.limit.split(' ').map(function (elem, index) { return index === 0 && parseInt(elem, 10) || elem; }) );
-			options.ranges = $attributes.ranges && $parse($attributes.ranges)($scope);
-			options.locale = $attributes.locale && $parse($attributes.locale)($scope);
-			options.opens = $attributes.opens && $parse($attributes.opens)($scope);
+            var options = {};
+            options.format = $attributes.format || 'YYYY-MM-DD';
+            options.separator = $attributes.separator || ' - ';
+            options.minDate = $attributes.minDate && moment($attributes.minDate);
+            options.maxDate = $attributes.maxDate && moment($attributes.maxDate);
+            options.dateLimit = $attributes.limit && moment.duration.apply(this, $attributes.limit.split(' ').map(function (elem, index) { return index === 0 && parseInt(elem, 10) || elem; }) );
+            options.ranges = $attributes.ranges && $parse($attributes.ranges)($scope);
+            options.locale = {cancelLabel:'', applyLabel:''};
+            options.applyClass = 'fa fa-check btn-success btn-lg';
+            options.cancelClass = 'fa fa-times btn-default btn-lg btn-primary';
 
 			function format(date) {
 				return date.format(options.format);
@@ -57,12 +60,17 @@ angular.module('ngBootstrap', []).directive('input', function ($compile, $parse)
 				$element.data('daterangepicker').updateInputText();
 			});
 
-			$element.daterangepicker(options, function(start, end) {
-				$scope.$apply(function () {
-					ngModel.$setViewValue({ startDate: start, endDate: end });
-					ngModel.$render();
-				});
-			});			
+            if(angular.element(".daterangepicker").size()>0) {
+                angular.element(".daterangepicker").remove();
+                $element.daterangepicker('remove');
+            }
+
+            $element.daterangepicker(options, function (start, end) {
+                $scope.$apply(function () {
+                    ngModel.$setViewValue({startDate: start, endDate: end});
+                    ngModel.$render();
+                });
+            });
 		}
 	};
 });
